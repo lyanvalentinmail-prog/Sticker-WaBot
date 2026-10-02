@@ -72,6 +72,17 @@ cd Sticker-WaBot
 npm install
 ```
 
+> ✅ **Comprueba que tienes la versión correcta:** ejecuta
+> ```bash
+> grep sharp package.json
+> ```
+> Si **no muestra nada**, tu código está actualizado (el bot usa ffmpeg).
+> Si muestra `"sharp": ...`, tu copia está vieja; actualízala con:
+> ```bash
+> git fetch origin
+> git reset --hard origin/arena/01a0fedf-sticker-wabot
+> ```
+
 > 💡 **¿Ya habías clonado antes sin la rama?** No borres nada, solo cámbiate a la rama correcta:
 > ```bash
 > cd ~/Sticker-WaBot
@@ -79,6 +90,10 @@ npm install
 > git checkout arena/01a0fedf-sticker-wabot
 > npm install
 > ```
+
+> ℹ️ Avisos de npm **que puedes ignorar**: `1 high severity vulnerability`,
+> `npm warn install-scripts ...` (ninguna dependencia necesita esos scripts)
+> y `packages are looking for funding`. **No ejecutes** `npm audit fix --force` (rompe el bot).
 
 ### 6️⃣ Inicia el bot
 
@@ -191,7 +206,7 @@ const PACK_AUTHOR = 'Mi Bot'        // autor del pack
 | Problema | Solución |
 |---|---|
 | `npm error enoent Could not read package.json` | Estás en la rama `main` (vacía). Ejecuta `git fetch origin && git checkout arena/01a0fedf-sticker-wabot` dentro de la carpeta, o vuelve a clonar con `-b` (ver paso 4️⃣) |
-| `Could not load the "sharp" module using the android-arm64 runtime` | `sharp` no funciona en Termux. El bot ya **no lo usa** (usa ffmpeg). Actualiza tu copia: `git pull origin arena/01a0fedf-sticker-wabot && rm -rf node_modules && pkg install ffmpeg -y && npm install` |
+| `Could not load the "sharp" module using the android-arm64 runtime` | Tu copia tiene el código viejo (el bot ya usa **ffmpeg**, no sharp). Fuerza la actualización así: `git fetch origin && git reset --hard origin/arena/01a0fedf-sticker-wabot && rm -rf node_modules && pkg install ffmpeg -y && npm install`. Para comprobar que ya estás al día ejecuta `grep sharp package.json` → **no debe mostrar nada** |
 | `No se encontró "ffmpeg"` / `spawn ffmpeg ENOENT` | Instala ffmpeg: `pkg install ffmpeg -y` y reinicia el bot |
 | El QR se cierra muy rápido | Escanea rápido; si se vence, se genera otro solo |
 | "Sesión cerrada" al iniciar | Borra la carpeta `auth` y vuelve a vincular: `rm -rf auth && npm start` |
