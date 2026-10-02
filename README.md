@@ -55,15 +55,27 @@ pkg install git nodejs -y
 ### 4️⃣ Clona este repositorio
 
 ```bash
-git clone https://github.com/lyanvalentinmail-prog/Sticker-WaBot
+git clone -b arena/01a0fedf-sticker-wabot https://github.com/lyanvalentinmail-prog/Sticker-WaBot
 cd Sticker-WaBot
 ```
+
+> 📌 **Importante:** el código del bot está en la rama `arena/01a0fedf-sticker-wabot`.
+> Si clonas sin `-b ...` descargarás la rama `main` (vacía) y `npm install` fallará con
+> *"Could not read package.json"*. Cuando el código se fusione a `main` ya podrás clonar normal.
 
 ### 5️⃣ Instala las dependencias
 
 ```bash
 npm install
 ```
+
+> 💡 **¿Ya habías clonado antes sin la rama?** No borres nada, solo cámbiate a la rama correcta:
+> ```bash
+> cd ~/Sticker-WaBot
+> git fetch origin
+> git checkout arena/01a0fedf-sticker-wabot
+> npm install
+> ```
 
 ### 6️⃣ Inicia el bot
 
@@ -169,6 +181,7 @@ const PACK_AUTHOR = 'Mi Bot'        // autor del pack
 
 | Problema | Solución |
 |---|---|
+| `npm error enoent Could not read package.json` | Estás en la rama `main` (vacía). Ejecuta `git fetch origin && git checkout arena/01a0fedf-sticker-wabot` dentro de la carpeta, o vuelve a clonar con `-b` (ver paso 4️⃣) |
 | El QR se cierra muy rápido | Escanea rápido; si se vence, se genera otro solo |
 | "Sesión cerrada" al iniciar | Borra la carpeta `auth` y vuelve a vincular: `rm -rf auth && npm start` |
 | Error al instalar `sharp` | Actualiza paquetes: `pkg update && pkg upgrade -y` y repite `npm install` |
