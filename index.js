@@ -230,7 +230,11 @@ async function handleMessage(sock, m) {
   } catch (err) {
     console.error('Error creando sticker:', err)
     await react('❌')
-    reply('❌ No pude crear el sticker. Asegúrate de que sea una imagen (JPG, PNG o WEBP) e inténtalo de nuevo.')
+    if (/ffmpeg/i.test(err.message || '')) {
+      reply('❌ No tengo *ffmpeg* instalado. En Termux ejecuta:\n`pkg install ffmpeg -y`\ny reinicia el bot.')
+    } else {
+      reply('❌ No pude crear el sticker. Asegúrate de que sea una imagen (JPG, PNG o WEBP) e inténtalo de nuevo.')
+    }
   }
 }
 

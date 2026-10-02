@@ -46,11 +46,14 @@ Abre Termux y ejecuta:
 pkg update && pkg upgrade -y
 ```
 
-### 3️⃣ Instala Git y Node.js
+### 3️⃣ Instala Git, Node.js y FFmpeg
 
 ```bash
-pkg install git nodejs -y
+pkg install git nodejs ffmpeg -y
 ```
+
+> 📌 **ffmpeg es obligatorio**: es el convertidor que transforma tu foto en sticker.
+> Sin él el bot no podrá crear stickers.
 
 ### 4️⃣ Clona este repositorio
 
@@ -172,8 +175,14 @@ const PACK_AUTHOR = 'Mi Bot'        // autor del pack
 ## 🧰 Requisitos
 
 - **Node.js** 18 o superior (Termux instala la versión actual)
+- **FFmpeg** (`pkg install ffmpeg` en Termux)
 - Conexión a internet
 - WhatsApp instalado en tu teléfono
+
+> 💡 El bot usa **ffmpeg** (proceso del sistema) en vez de librerías nativas como `sharp`,
+> porque `sharp` **no carga en Termux** (error *"Could not load the sharp module using the
+> android-arm64 runtime"*). Con ffmpeg el proyecto es 100% JavaScript puro y funciona en
+> Termux, servidores Linux y paneles de hosting sin compilar nada.
 
 ---
 
@@ -182,9 +191,10 @@ const PACK_AUTHOR = 'Mi Bot'        // autor del pack
 | Problema | Solución |
 |---|---|
 | `npm error enoent Could not read package.json` | Estás en la rama `main` (vacía). Ejecuta `git fetch origin && git checkout arena/01a0fedf-sticker-wabot` dentro de la carpeta, o vuelve a clonar con `-b` (ver paso 4️⃣) |
+| `Could not load the "sharp" module using the android-arm64 runtime` | `sharp` no funciona en Termux. El bot ya **no lo usa** (usa ffmpeg). Actualiza tu copia: `git pull origin arena/01a0fedf-sticker-wabot && rm -rf node_modules && pkg install ffmpeg -y && npm install` |
+| `No se encontró "ffmpeg"` / `spawn ffmpeg ENOENT` | Instala ffmpeg: `pkg install ffmpeg -y` y reinicia el bot |
 | El QR se cierra muy rápido | Escanea rápido; si se vence, se genera otro solo |
 | "Sesión cerrada" al iniciar | Borra la carpeta `auth` y vuelve a vincular: `rm -rf auth && npm start` |
-| Error al instalar `sharp` | Actualiza paquetes: `pkg update && pkg upgrade -y` y repite `npm install` |
 | El bot no responde | Revisa que el número vinculado tenga WhatsApp activo e internet estable |
 | No aparece el menú de opciones | Fuerza un método: `npm run qr` o `npm run pair` |
 
@@ -197,7 +207,7 @@ Sticker-WaBot/
 ├── index.js        → Bot principal (conexión, comandos)
 ├── server.js       → Servidor web con panel de estado
 ├── lib/
-│   └── sticker.js  → Conversión de foto a sticker (sin deformar) + metadatos
+│   └── sticker.js  → Conversión de foto a sticker con ffmpeg (sin deformar) + metadatos
 ├── auth/           → Sesión de WhatsApp (se crea solo, NO borrar si quieres seguir vinculado)
 └── package.json
 ```
