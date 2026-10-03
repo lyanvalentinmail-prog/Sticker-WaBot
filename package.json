@@ -1,7 +1,7 @@
 {
   "name": "sticker-wabot",
-  "version": "1.2.0",
-  "description": "Bot de WhatsApp (Baileys): .sticker/.s convierte fotos en stickers sin deformarlas, .brat/.bratv crea stickers estilo BRAT (estáticos y animados). Incluye QR, código de vinculación y servidor web.",
+  "version": "1.3.0",
+  "description": "Bot de WhatsApp (Baileys): .sticker/.s convierte fotos en stickers sin deformarlas, .brat/.bratv crea stickers estilo BRAT (estáticos y animados). 100% JavaScript/WASM (jimp + node-webpmux): NO necesita ffmpeg ni sharp. Incluye QR, código de vinculación y servidor web.",
   "main": "index.js",
   "license": "MIT",
   "scripts": {

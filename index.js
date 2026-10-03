@@ -203,9 +203,9 @@ async function handleBrat(sock, m, from, cmd, text, react, reply) {
       const sticker = await addExif(webp, { pack: PACK_NAME, author: PACK_AUTHOR, emojis: ['🍏'] })
       await sock.sendMessage(from, { sticker, width: 512, height: 512 }, { quoted: m })
     } else {
-      // 🖼️ MODO ESTÁTICO: imagen PNG → WebP 512×512 con EXIF
-      const png = await makeBratImage(text)
-      const { sticker, width, height } = await toSticker(png, { pack: PACK_NAME, author: PACK_AUTHOR })
+      // 🖼️ MODO ESTÁTICO: imagen BRAT → WebP 512×512 con EXIF
+      const img = await makeBratImage(text)
+      const { sticker, width, height } = await toSticker(img, { pack: PACK_NAME, author: PACK_AUTHOR })
       await sock.sendMessage(from, { sticker, width, height }, { quoted: m })
     }
 
@@ -213,13 +213,9 @@ async function handleBrat(sock, m, from, cmd, text, react, reply) {
   } catch (err) {
     console.error('Error en comando brat:', err)
     await react('❌')
-    if (/ffmpeg/i.test(err.message || '')) {
-      reply('❌ No tengo *ffmpeg* instalado. En Termux ejecuta:\n`pkg install ffmpeg -y`\ny reinicia el bot.')
-    } else {
-      // Muestra el error real para poder diagnosticarlo
-      const motivo = String(err.message || err).slice(0, 180)
-      reply(`❌ No pude crear el sticker brat.\n🔍 Error: \`${motivo}\``)
-    }
+    // Muestra el error real para poder diagnosticarlo
+    const motivo = String(err.message || err).slice(0, 180)
+    reply(`❌ No pude crear el sticker brat.\n🔍 Error: \`${motivo}\``)
   }
 }
 
@@ -299,11 +295,7 @@ async function handleMessage(sock, m) {
   } catch (err) {
     console.error('Error creando sticker:', err)
     await react('❌')
-    if (/ffmpeg/i.test(err.message || '')) {
-      reply('❌ No tengo *ffmpeg* instalado. En Termux ejecuta:\n`pkg install ffmpeg -y`\ny reinicia el bot.')
-    } else {
-      reply('❌ No pude crear el sticker. Asegúrate de que sea una imagen (JPG, PNG o WEBP) e inténtalo de nuevo.')
-    }
+    reply('❌ No pude crear el sticker. Asegúrate de que sea una imagen (JPG, PNG o WEBP) e inténtalo de nuevo.')
   }
 }
 

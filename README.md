@@ -12,6 +12,7 @@ Hecho con **[Baileys](https://github.com/WhiskeySockets/Baileys)** (WhatsApp Web
 - 🍏 `.brat <texto>` — sticker estilo **BRAT** (fondo blanco + tu texto en minúsculas)
 - 🎬 `.bratv <texto>` — versión **animada (modo video)** del sticker BRAT
 - 🖼️ Tu foto conserva su **proporción exacta** (nunca se estira): va centrada sobre un lienzo **512×512 transparente**, el formato que WhatsApp exige para los stickers
+- ⚡ **Sin ffmpeg ni librerías nativas**: todo el procesamiento es 100% JavaScript/WASM (jimp + node-webpmux), así que funciona igual en Termux, servidores y paneles de hosting
 - 🔗 Inicio de sesión por **QR** o **código de 8 dígitos**
 - 🌐 **Servidor web** con panel de estado (muestra el QR en el navegador)
 - 🔁 Reconexión automática si se cae el internet
@@ -48,14 +49,13 @@ Abre Termux y ejecuta:
 pkg update && pkg upgrade -y
 ```
 
-### 3️⃣ Instala Git, Node.js y FFmpeg
+### 3️⃣ Instala Git y Node.js
 
 ```bash
-pkg install git nodejs ffmpeg -y
+pkg install git nodejs -y
 ```
 
-> 📌 **ffmpeg es obligatorio**: es el convertidor que transforma tu foto en sticker.
-> Sin él el bot no podrá crear stickers.
+> 📌 Desde la **v1.3.0** el bot **ya no necesita ffmpeg ni sharp**: convierte las fotos a stickers con JavaScript/WASM puro, así que no hay nada más que instalar.
 
 ### 4️⃣ Clona este repositorio
 
@@ -76,10 +76,9 @@ npm install
 
 > ✅ **Comprueba que tienes la versión correcta:** ejecuta
 > ```bash
-> grep sharp package.json
+> grep version package.json
 > ```
-> Si **no muestra nada**, tu código está actualizado (el bot usa ffmpeg).
-> Si muestra `"sharp": ...`, tu copia está vieja; actualízala con:
+> Debe mostrar `"version": "1.3.0"` (o mayor). Si muestra una versión vieja, actualiza con:
 > ```bash
 > git fetch origin
 > git reset --hard origin/arena/01a0fedf-sticker-wabot
@@ -202,14 +201,13 @@ const PACK_AUTHOR = 'Mi Bot'        // autor del pack
 ## 🧰 Requisitos
 
 - **Node.js** 18 o superior (Termux instala la versión actual)
-- **FFmpeg** (`pkg install ffmpeg` en Termux)
 - Conexión a internet
 - WhatsApp instalado en tu teléfono
 
-> 💡 El bot usa **ffmpeg** (proceso del sistema) en vez de librerías nativas como `sharp`,
-> porque `sharp` **no carga en Termux** (error *"Could not load the sharp module using the
-> android-arm64 runtime"*). Con ffmpeg el proyecto es 100% JavaScript puro y funciona en
-> Termux, servidores Linux y paneles de hosting sin compilar nada.
+> 💡 **Ya no necesitas instalar nada más.** Toda la conversión de imágenes y stickers
+> animados se hace con **JavaScript/WASM puro** (`jimp` para componer y `node-webpmux`
+> para codificar WebP). No se usa `sharp` (no carga en Termux) ni `ffmpeg`:
+> funciona igual en Termux, servidores Linux y paneles de hosting sin compilar nada.
 
 ---
 
@@ -218,10 +216,9 @@ const PACK_AUTHOR = 'Mi Bot'        // autor del pack
 | Problema | Solución |
 |---|---|
 | `npm error enoent Could not read package.json` | Estás en la rama `main` (vacía). Ejecuta `git fetch origin && git checkout arena/01a0fedf-sticker-wabot` dentro de la carpeta, o vuelve a clonar con `-b` (ver paso 4️⃣) |
-| `Could not load the "sharp" module using the android-arm64 runtime` | Tu copia tiene el código viejo (el bot ya usa **ffmpeg**, no sharp). Fuerza la actualización así: `git fetch origin && git reset --hard origin/arena/01a0fedf-sticker-wabot && rm -rf node_modules && pkg install ffmpeg -y && npm install`. Para comprobar que ya estás al día ejecuta `grep sharp package.json` → **no debe mostrar nada** |
-| `No se encontró "ffmpeg"` / `spawn ffmpeg ENOENT` | Instala ffmpeg: `pkg install ffmpeg -y` y reinicia el bot |
+| `Could not load the "sharp" module...` o `No se encontró "ffmpeg"` | Tu copia es vieja: desde la v1.3.0 el bot **no usa ni sharp ni ffmpeg** (todo es JavaScript/WASM puro). Fuerza la actualización así: `git fetch origin && git reset --hard origin/arena/01a0fedf-sticker-wabot && rm -rf node_modules && npm install` |
 | El sticker animado (`.bratv`) se ve quieto / no se mueve | **Normal:** WhatsApp solo reproduce la animación ~3 veces y luego la pausa (toca el sticker para repetirla). Si **nunca** se mueve: WhatsApp → **Ajustes → Accesibilidad → Animación** → actívala para stickers. Algunas versiones recientes de WhatsApp tienen un bug con animaciones que se corrige actualizando la app |
-| El bot no responde a `.brat` / `.bratv` | Probablemente tienes código viejo. Alarrancar, la terminal debe mostrar `Sticker-WaBot v1.2.0`. Si muestra otra versión: `git pull origin arena/01a0fedf-sticker-wabot && npm install`, luego **reinicia** (`Ctrl+C` y `npm start`) |
+| El bot no responde a `.brat` / `.bratv` | Probablemente tienes código viejo. Al arrancar, la terminal debe mostrar `Sticker-WaBot v1.3.0` (o mayor). Si muestra otra versión: `git pull origin arena/01a0fedf-sticker-wabot && npm install`, luego **reinicia** (`Ctrl+C` y `npm start`) |
 | El sticker se ve estirado (deformado a un cuadrado) | Ya está corregido: actualiza tu copia con `git pull origin arena/01a0fedf-sticker-wabot` y reinicia el bot. El archivo ahora es 512×512 con tu foto centrada y relleno transparente (WhatsApp exige stickers cuadrados y por eso lo estiraba) |
 | El QR se cierra muy rápido | Escanea rápido; si se vence, se genera otro solo |
 | "Sesión cerrada" al iniciar | Borra la carpeta `auth` y vuelve a vincular: `rm -rf auth && npm start` |
@@ -237,7 +234,7 @@ Sticker-WaBot/
 ├── index.js        → Bot principal (conexión, comandos)
 ├── server.js       → Servidor web con panel de estado
 ├── lib/
-│   ├── sticker.js  → Conversión de foto a sticker con ffmpeg (sin deformar) + WebP animado + metadatos
+│   ├── sticker.js  → Conversión de foto a sticker (jimp + node-webpmux WASM, sin ffmpeg) + WebP animado + metadatos
 │   └── brat.js     → Generador de stickers estilo BRAT (estáticos y animados)
 ├── auth/           → Sesión de WhatsApp (se crea solo, NO borrar si quieres seguir vinculado)
 └── package.json
