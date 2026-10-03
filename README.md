@@ -9,7 +9,7 @@ Hecho con **[Baileys](https://github.com/WhiskeySockets/Baileys)** (WhatsApp Web
 ## ✨ Características
 
 - 📸 `.sticker` y `.s` — los dos alias del comando
-- 🖼️ El sticker mantiene la **proporción exacta** de tu foto (ancho × largo)
+- 🖼️ Tu foto conserva su **proporción exacta** (nunca se estira): va centrada sobre un lienzo **512×512 transparente**, el formato que WhatsApp exige para los stickers
 - 🔗 Inicio de sesión por **QR** o **código de 8 dígitos**
 - 🌐 **Servidor web** con panel de estado (muestra el QR en el navegador)
 - 🔁 Reconexión automática si se cae el internet
@@ -25,7 +25,7 @@ Hecho con **[Baileys](https://github.com/WhiskeySockets/Baileys)** (WhatsApp Web
 | **Opción 1** | Envía una **foto** y escribe como texto (caption) `.s` o `.sticker` |
 | **Opción 2** | **Responde** a una foto ya enviada con `.s` o `.sticker` |
 
-El bot te devuelve el sticker con el mismo ancho y largo (proporcional) de la imagen original. Acepta fotos en JPG, PNG y WEBP.
+El bot te devuelve un sticker con la foto en su **proporción original, sin estirar ni deformar**: la imagen queda centrada en un lienzo 512×512 transparente (WhatsApp exige stickers exactamente cuadrados; si el archivo no es cuadrado, el cliente lo estira). Los bordes transparentes son invisibles en el chat. Acepta fotos en JPG, PNG y WEBP.
 
 ---
 
@@ -208,6 +208,7 @@ const PACK_AUTHOR = 'Mi Bot'        // autor del pack
 | `npm error enoent Could not read package.json` | Estás en la rama `main` (vacía). Ejecuta `git fetch origin && git checkout arena/01a0fedf-sticker-wabot` dentro de la carpeta, o vuelve a clonar con `-b` (ver paso 4️⃣) |
 | `Could not load the "sharp" module using the android-arm64 runtime` | Tu copia tiene el código viejo (el bot ya usa **ffmpeg**, no sharp). Fuerza la actualización así: `git fetch origin && git reset --hard origin/arena/01a0fedf-sticker-wabot && rm -rf node_modules && pkg install ffmpeg -y && npm install`. Para comprobar que ya estás al día ejecuta `grep sharp package.json` → **no debe mostrar nada** |
 | `No se encontró "ffmpeg"` / `spawn ffmpeg ENOENT` | Instala ffmpeg: `pkg install ffmpeg -y` y reinicia el bot |
+| El sticker se ve estirado (deformado a un cuadrado) | Ya está corregido: actualiza tu copia con `git pull origin arena/01a0fedf-sticker-wabot` y reinicia el bot. El archivo ahora es 512×512 con tu foto centrada y relleno transparente (WhatsApp exige stickers cuadrados y por eso lo estiraba) |
 | El QR se cierra muy rápido | Escanea rápido; si se vence, se genera otro solo |
 | "Sesión cerrada" al iniciar | Borra la carpeta `auth` y vuelve a vincular: `rm -rf auth && npm start` |
 | El bot no responde | Revisa que el número vinculado tenga WhatsApp activo e internet estable |
