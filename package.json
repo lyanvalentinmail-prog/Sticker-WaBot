@@ -1,7 +1,7 @@
 {
   "name": "sticker-wabot",
   "version": "1.0.0",
-  "description": "Bot de WhatsApp (Baileys) con un único comando: .sticker / .s — convierte fotos en stickers conservando su ancho y largo original. Incluye QR, código de vinculación y servidor web.",
+  "description": "Bot de WhatsApp (Baileys): .sticker/.s convierte fotos en stickers sin deformarlas, .brat/.bratv crea stickers estilo BRAT (estáticos y animados). Incluye QR, código de vinculación y servidor web.",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
@@ -19,6 +19,7 @@
   "dependencies": {
     "@whiskeysockets/baileys": "^6.7.19",
     "express": "^4.21.2",
+    "jimp": "^1.6.0",
     "node-webpmux": "^3.2.1",
     "pino": "^9.5.0",
     "qrcode": "^1.5.4",

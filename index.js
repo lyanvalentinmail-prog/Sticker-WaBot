@@ -12,7 +12,8 @@ const pino = require('pino')
 const readline = require('readline')
 const qrcodeTerminal = require('qrcode-terminal')
 
-const { toSticker } = require('./lib/sticker')
+const { toSticker, addExif, framesToAnimatedWebp } = require('./lib/sticker')
+const { makeBratImage, makeBratFrames } = require('./lib/brat')
 const { startServer, setState } = require('./server')
 
 // ──────────────────────────────────────────────
@@ -22,7 +23,7 @@ const PACK_NAME = 'Sticker-WaBot'
 const PACK_AUTHOR = 'Mi Bot'
 const PORT = process.env.PORT || 3000
 
-const commands = ['s', 'sticker'] // variantes del comando
+const commands = ['s', 'sticker', 'brat', 'bratv'] // comandos disponibles
 
 const logger = pino({ level: 'silent' })
 
@@ -162,6 +163,59 @@ function getBody(m) {
   )
 }
 
+// ──────────────────────────────────────────────
+//  COMANDOS .brat y .bratv (estilo BRAT)
+// ──────────────────────────────────────────────
+async function handleBrat(sock, m, from, cmd, text, react, reply) {
+  // Si no hay texto, intentar usar el del mensaje citado
+  if (!text) {
+    const content = unwrapContent(m.message)
+    const contextInfo = content?.[getContentType(content)]?.contextInfo
+    if (contextInfo?.quotedMessage) {
+      text = getBody({ message: contextInfo.quotedMessage }).trim()
+    }
+  }
+
+  if (!text) {
+    return reply(
+      '✏️ *Sticker estilo BRAT*\n\n' +
+      '• `.brat <texto>` → sticker verde con tu texto\n' +
+      '• `.bratv <texto>` → versión *video* (animada)\n\n' +
+      '📌 Ejemplo: `.brat hola mundo`\n' +
+      '💡 También puedes *responder* a un mensaje con `.brat`'
+    )
+  }
+
+  const animated = cmd === 'bratv'
+
+  try {
+    await react('⚡')
+
+    if (animated) {
+      // 🎬 MODO VIDEO: secuencia de frames con vibración → WebP animado
+      const frames = await makeBratFrames(text)
+      const webp = await framesToAnimatedWebp(frames, 12)
+      const sticker = await addExif(webp, { pack: PACK_NAME, author: PACK_AUTHOR, emojis: ['🍏'] })
+      await sock.sendMessage(from, { sticker, width: 512, height: 512, isAnimated: true }, { quoted: m })
+    } else {
+      // 🖼️ MODO ESTÁTICO: imagen PNG → WebP 512×512 con EXIF
+      const png = await makeBratImage(text)
+      const { sticker, width, height } = await toSticker(png, { pack: PACK_NAME, author: PACK_AUTHOR })
+      await sock.sendMessage(from, { sticker, width, height }, { quoted: m })
+    }
+
+    await react('✅')
+  } catch (err) {
+    console.error('Error en comando brat:', err)
+    await react('❌')
+    if (/ffmpeg/i.test(err.message || '')) {
+      reply('❌ No tengo *ffmpeg* instalado. En Termux ejecuta:\n`pkg install ffmpeg -y`\ny reinicia el bot.')
+    } else {
+      reply('❌ No pude crear el sticker brat. Inténtalo con un texto más corto.')
+    }
+  }
+}
+
 async function handleMessage(sock, m) {
   if (!m.message || !m.key?.remoteJid) return
   const from = m.key.remoteJid
@@ -170,14 +224,21 @@ async function handleMessage(sock, m) {
   const body = getBody(m).trim()
   if (!body.startsWith('.')) return
 
-  const cmd = body.slice(1).split(/\s+/)[0].toLowerCase()
+  const args = body.slice(1).trim().split(/\s+/)
+  const cmd = args[0].toLowerCase()
   if (!commands.includes(cmd)) return
+  const text = args.slice(1).join(' ')
 
   const react = (emoji) =>
     sock.sendMessage(from, { react: { text: emoji, key: m.key } }).catch(() => {})
 
   const reply = (text) =>
     sock.sendMessage(from, { text }, { quoted: m })
+
+  // ── Comandos de texto: .brat / .bratv ──
+  if (cmd === 'brat' || cmd === 'bratv') {
+    return handleBrat(sock, m, from, cmd, text, react, reply)
+  }
 
   // Buscar la imagen: en el propio mensaje (foto enviada con el
   // comando como descripción) o en el mensaje citado (respondiendo).
