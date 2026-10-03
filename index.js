@@ -223,9 +223,11 @@ async function handleMessage(sock, m) {
     )
 
     // Sticker con el ancho × largo proporcional de la foto original
-    const sticker = await toSticker(buffer, { pack: PACK_NAME, author: PACK_AUTHOR })
+    const { sticker, width, height } = await toSticker(buffer, { pack: PACK_NAME, author: PACK_AUTHOR })
 
-    await sock.sendMessage(from, { sticker }, { quoted: m })
+    // Se declaran width/height en el mensaje: sin ellos WhatsApp
+    // muestra el sticker como un cuadrado fijo de 512×512
+    await sock.sendMessage(from, { sticker, width, height }, { quoted: m })
     await react('✅')
   } catch (err) {
     console.error('Error creando sticker:', err)
