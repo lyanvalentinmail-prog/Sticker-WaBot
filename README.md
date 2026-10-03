@@ -9,7 +9,7 @@ Hecho con **[Baileys](https://github.com/WhiskeySockets/Baileys)** (WhatsApp Web
 ## ✨ Características
 
 - 📸 `.sticker` y `.s` — convierte cualquier foto en sticker sin deformarla
-- 🍏 `.brat <texto>` — sticker estilo **BRAT** (verde lima + tu texto en minúsculas)
+- 🍏 `.brat <texto>` — sticker estilo **BRAT** (fondo blanco + tu texto en minúsculas)
 - 🎬 `.bratv <texto>` — versión **animada (modo video)** del sticker BRAT
 - 🖼️ Tu foto conserva su **proporción exacta** (nunca se estira): va centrada sobre un lienzo **512×512 transparente**, el formato que WhatsApp exige para los stickers
 - 🔗 Inicio de sesión por **QR** o **código de 8 dígitos**
@@ -175,7 +175,7 @@ Esto también permite hostear el bot en paneles tipo **Render, Railway, Replit, 
 | Comando | Qué hace |
 |---|---|
 | `.sticker` / `.s` | Convierte la foto (enviada o citada) en sticker conservando su forma |
-| `.brat <texto>` | Sticker estilo **BRAT**: fondo verde lima `#8ACE00` con tu texto en minúsculas y el característico desenfoque |
+| `.brat <texto>` | Sticker estilo **BRAT**: fondo blanco con tu texto en minúsculas y el característico desenfoque |
 | `.bratv <texto>` | **Modo video**: la misma estética BRAT pero como **sticker animado** (el texto vibra en bucle) |
 
 💡 También puedes **responder** al mensaje de otra persona con `.brat` y el bot usará su texto.

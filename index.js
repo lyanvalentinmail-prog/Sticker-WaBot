@@ -179,7 +179,7 @@ async function handleBrat(sock, m, from, cmd, text, react, reply) {
   if (!text) {
     return reply(
       '✏️ *Sticker estilo BRAT*\n\n' +
-      '• `.brat <texto>` → sticker verde con tu texto\n' +
+      '• `.brat <texto>` → sticker blanco con tu texto\n' +
       '• `.bratv <texto>` → versión *video* (animada)\n\n' +
       '📌 Ejemplo: `.brat hola mundo`\n' +
       '💡 También puedes *responder* a un mensaje con `.brat`'
@@ -189,14 +189,17 @@ async function handleBrat(sock, m, from, cmd, text, react, reply) {
   const animated = cmd === 'bratv'
 
   try {
-    await react('⚡')
+    await react('⏳')
 
     if (animated) {
-      // 🎬 MODO VIDEO: secuencia de frames con vibración → WebP animado
+      // 🎬 MODO VIDEO: secuencia de frames con vibración → WebP animado.
+      // IMPORTANTE: NO declarar isAnimated a mano — sin firstFrameLength
+      // y firstFrameSidecar WhatsApp descarta el sticker silenciosamente.
+      // El WebP animado se detecta solo por su contenido.
       const frames = await makeBratFrames(text)
       const webp = await framesToAnimatedWebp(frames, 12)
       const sticker = await addExif(webp, { pack: PACK_NAME, author: PACK_AUTHOR, emojis: ['🍏'] })
-      await sock.sendMessage(from, { sticker, width: 512, height: 512, isAnimated: true }, { quoted: m })
+      await sock.sendMessage(from, { sticker, width: 512, height: 512 }, { quoted: m })
     } else {
       // 🖼️ MODO ESTÁTICO: imagen PNG → WebP 512×512 con EXIF
       const png = await makeBratImage(text)
