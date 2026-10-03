@@ -22,6 +22,7 @@ const { startServer, setState } = require('./server')
 const PACK_NAME = 'Sticker-WaBot'
 const PACK_AUTHOR = 'Mi Bot'
 const PORT = process.env.PORT || 3000
+const BOT_VERSION = require('./package.json').version
 
 const commands = ['s', 'sticker', 'brat', 'bratv'] // comandos disponibles
 
@@ -38,6 +39,7 @@ function question(text) {
 //  ARRANQUE
 // ──────────────────────────────────────────────
 async function startBot() {
+  console.log(`🤖 Sticker-WaBot v${BOT_VERSION} — iniciando...`)
   const { state, saveCreds } = await useMultiFileAuthState('./auth')
   const { version } = await fetchLatestBaileysVersion()
 
@@ -49,7 +51,7 @@ async function startBot() {
 
   if (!state.creds.registered && process.stdin.isTTY && !process.argv.includes('--pair') && !process.argv.includes('--qr')) {
     console.log('\n╔════════════════════════════════════╗')
-    console.log('║        🤖  STICKER-WABOT           ║')
+    console.log(`║    🤖  STICKER-WABOT  v${BOT_VERSION.padEnd(8)} ║`)
     console.log('╚════════════════════════════════════╝\n')
     console.log('Elige cómo vincular el bot:\n')
     console.log('  [1] Código QR')
@@ -108,8 +110,8 @@ async function startBot() {
 
     if (connection === 'open') {
       const me = sock.user?.id?.split(':')[0] || 'desconocido'
-      console.log(`\n✅ Bot conectado como ${me}`)
-      console.log(`💡 Envía una foto con el texto  .s  o responde a una foto con  .sticker\n`)
+      console.log(`\n✅ Bot v${BOT_VERSION} conectado como ${me}`)
+      console.log(`💡 .s/.sticker (foto→sticker) | .brat <texto> | .bratv <texto>\n`)
       setState({ status: 'conectado', qr: null, pairingCode: null, user: me, connectedAt: Date.now() })
     }
 
@@ -214,7 +216,9 @@ async function handleBrat(sock, m, from, cmd, text, react, reply) {
     if (/ffmpeg/i.test(err.message || '')) {
       reply('❌ No tengo *ffmpeg* instalado. En Termux ejecuta:\n`pkg install ffmpeg -y`\ny reinicia el bot.')
     } else {
-      reply('❌ No pude crear el sticker brat. Inténtalo con un texto más corto.')
+      // Muestra el error real para poder diagnosticarlo
+      const motivo = String(err.message || err).slice(0, 180)
+      reply(`❌ No pude crear el sticker brat.\n🔍 Error: \`${motivo}\``)
     }
   }
 }
